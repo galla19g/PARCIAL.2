@@ -1,0 +1,13 @@
+<h2> Editar contacto</h2>
+<form action="/actualizar/<%= contacto.id_contacto %>" method="post">
+  <input name="primer_nombre" value="<%= contacto.primer_nombre %>">
+  <input name="segundo_nombre" value="<%= contacto.segundo_nombre %>">
+  <input name="primer_apellido" value="<%= contacto.primer_apellido %>">
+  <input name="segundo_apellido" value="<%= contacto.segundo_apellido %>">
+  <input name="id_genero" type="number" value="<%= contacto.id_genero %>">
+  <input name="id_direccion" type="number" value="<%= contacto.id_direccion %>">
+  <input name="id_tipo_telefono" type="number" value="<%= contacto.id_tipo_telefono %>">
+  <input name="email" value="<%= contacto.email %>">
+  <input name="telefono" value="<%= contacto.telefono %>">
+  <button type="submit">Actualizar</button>
+</form>

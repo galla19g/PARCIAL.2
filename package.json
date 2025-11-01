@@ -1,0 +1,25 @@
+{
+  "name": "contactos_app",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "start": "node app.js",
+    "dev": "nodemon app.js"
+  },
+  "dependencies": {
+    "body-parser": "^2.2.0",
+    "ejs": "^3.1.10",
+    "express": "^4.21.2",
+    "mysql2": "^3.15.3",
+    "redirect": "^0.2.0",
+    "render": "^0.1.4"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.0"
+  },
+  "main": "app.js",
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": ""
+}

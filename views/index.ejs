@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Gestor de Contactos</title>
+  <link rel="stylesheet" href="/estilos.css">
+</head>
+<body>
+  <h1>Lista de Contactos</h1>
+
+  <!-- Buscador -->
+  <form action="/buscar" method="get">
+    <input type="text" name="q" placeholder="Buscar contacto...">
+    <button type="submit">🔍</button>
+  </form>
+
+  <table>
+    <tr>
+      <th>ID</th><th>Primer Nombre</th><th>Segundo Nombre</th>
+      <th>Primer Apellido</th><th>Segundo Apellido</th>
+      <th>Género</th><th>Barrio</th><th>Tipo Teléfono</th>
+      <th>Email</th><th>Teléfono</th><th>Acciones</th>
+    </tr>
+    <% contactos.forEach(c => { %>
+    <tr>
+      <td><%= c.id_contacto %></td>
+      <td><%= c.primer_nombre %></td>
+      <td><%= c.segundo_nombre %></td>
+      <td><%= c.primer_apellido %></td>
+      <td><%= c.segundo_apellido %></td>
+      <td><%= c.id_genero %></td>
+      <td><%= c.id_direccion %></td>
+      <td><%= c.id_tipo_telefono %></td>
+      <td><%= c.email %></td>
+      <td><%= c.telefono %></td>
+      <td>
+        <a href="/editar/<%= c.id_contacto %>">✏️</a>
+        <a href="/eliminar/<%= c.id_contacto %>" onclick="return confirm('¿Eliminar este contacto?')">🗑️</a>
+      </td>
+    </tr>
+    <% }) %>
+  </table>
+
+  <h2> Agregar nuevo contacto</h2>
+  <form action="/agregar" method="post">
+    <input name="primer_nombre" placeholder="Primer nombre" required>
+    <input name="segundo_nombre" placeholder="Segundo nombre">
+    <input name="primer_apellido" placeholder="Primer apellido" required>
+    <input name="segundo_apellido" placeholder="Segundo apellido">
+    <input name="id_genero" type="number" placeholder="Género (1=M,2=F)">
+    <input name="id_direccion" type="number" placeholder="Barrio ID(1,9)">
+    <input name="id_tipo_telefono" type="number" placeholder="Tipo teléfono (1,3)">
+    <input name="email" type="email" placeholder="Correo" required>
+    <input name="telefono" placeholder="Teléfono" required>
+    <button type="submit">Guardar</button>
+  </form>
+
+  <% if (barrios.length > 0) { %>
+  <h2> % Porcentaje de contactos por barrio</h2>
+  <% barrios.forEach(b => { %>
+    <p>Barrio <%= b.id_direccion %>: <%= b.porcentaje.toFixed(1) %>%</p>
+    <progress value="<%= b.porcentaje %>" max="100"></progress>
+  <% }) %>
+  <% } %>
+</body>
+</html>
