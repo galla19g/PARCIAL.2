@@ -11,29 +11,61 @@ app.set("view engine", "ejs");
 app.set("views", path.join(process.cwd(), "views"));
 app.use(express.static("public"));
 
-// 🔹 Mostrar todos los contactos
+// Mostrar todos los contactos
 app.get("/", (req, res) => {
-  const sql = "SELECT * FROM contacto";
+  const sql = `
+    SELECT c.*, 
+          g.detalle_genero, 
+          d.detalle_direccion, 
+          t.detalle_tipo_telefono
+    FROM contacto c
+    LEFT JOIN genero g ON c.id_genero = g.id_genero
+    LEFT JOIN direccion d ON c.id_direccion = d.id_direccion
+    LEFT JOIN tipo_telefono t ON c.id_tipo_telefono = t.id_tipo_telefono
+  `;
+  
   conexion.query(sql, (err, contactos) => {
     if (err) throw err;
 
-    // Obtener totales por barrio
-    const sqlBarrios = `
-      SELECT id_direccion, COUNT(*) as cantidad
-      FROM contacto
-      GROUP BY id_direccion
-    `;
-    conexion.query(sqlBarrios, (err, barrios) => {
+    // Obtener catálogos para el formulario
+    conexion.query("SELECT * FROM genero", (err, generos) => {
       if (err) throw err;
+      
+      conexion.query("SELECT * FROM direccion", (err, direcciones) => {
+        if (err) throw err;
+        
+        conexion.query("SELECT * FROM tipo_telefono", (err, tipos_telefono) => {
+          if (err) throw err;
 
-      const total = contactos.length;
-      barrios.forEach(b => (b.porcentaje = (b.cantidad * 100) / total));
-      res.render("index", { contactos, barrios });
+          // Obtener totales por barrio
+          const sqlBarrios = `
+            SELECT d.id_direccion, d.detalle_direccion, COUNT(*) as cantidad
+            FROM contacto c
+            INNER JOIN direccion d ON c.id_direccion = d.id_direccion
+            GROUP BY d.id_direccion, d.detalle_direccion
+          `;
+          
+          conexion.query(sqlBarrios, (err, barrios) => {
+            if (err) throw err;
+
+            const total = contactos.length;
+            barrios.forEach(b => (b.porcentaje = (b.cantidad * 100) / total));
+            
+            res.render("index", { 
+              contactos, 
+              barrios,
+              generos,
+              direcciones,
+              tipos_telefono
+            });
+          });
+        });
+      });
     });
   });
 });
 
-// 🔹 Agregar contacto
+// Agregar contacto
 app.post("/agregar", (req, res) => {
   const datos = req.body;
   const sql = `
@@ -56,7 +88,7 @@ app.post("/agregar", (req, res) => {
   );
 });
 
-// 🔹 Eliminar contacto
+// Eliminar contacto
 app.get("/eliminar/:id", (req, res) => {
   conexion.query("DELETE FROM contacto WHERE id_contacto=?", [req.params.id], err => {
     if (err) throw err;
@@ -64,23 +96,36 @@ app.get("/eliminar/:id", (req, res) => {
   });
 });
 
-// 🔹 Cargar contacto a editar
+// Cargar contacto a editar
 app.get("/editar/:id", (req, res) => {
   conexion.query("SELECT * FROM contacto WHERE id_contacto=?", [req.params.id], (err, filas) => {
     if (err) throw err;
-    res.render("editar", { contacto: filas[0] });
+    
+    // Obtener catálogos para los selectores
+    conexion.query("SELECT * FROM genero", (err, generos) => {
+      if (err) throw err;
+      
+      conexion.query("SELECT * FROM direccion", (err, direcciones) => {
+        if (err) throw err;
+        
+        conexion.query("SELECT * FROM tipo_telefono", (err, tipos_telefono) => {
+          if (err) throw err;
+          
+          res.render("editar", { 
+            contacto: filas[0],
+            generos,
+            direcciones,
+            tipos_telefono
+          });
+        });
+      });
+    });
   });
 });
 
 // Actualizar contacto
 app.post("/actualizar/:id", (req, res) => {
   const datos = req.body;
-
-  // Validación de género (solo 1 o 2)
-  if (![1, 2].includes(Number(datos.id_genero))) {
-    console.log("⚠️ Género inválido:", datos.id_genero);
-    return res.status(400).send("Error: el género solo puede ser 1 (Masculino) o 2 (Femenino).");
-  }
 
   // Validar dirección existente
   conexion.query(
@@ -92,10 +137,7 @@ app.post("/actualizar/:id", (req, res) => {
         return res.status(500).send("Error en el servidor");
       }
 
-      if (resultadoDireccion.length === 0) {
-        console.log("⚠️ Dirección no existe:", datos.id_direccion);
-        return res.status(400).send("Error: la dirección seleccionada no existe.");
-      }
+
 
       // Validar tipo de teléfono existente
       conexion.query(
@@ -105,11 +147,6 @@ app.post("/actualizar/:id", (req, res) => {
           if (err2) {
             console.error("Error SQL:", err2);
             return res.status(500).send("Error en el servidor");
-          }
-
-          if (resultadoTelefono.length === 0) {
-            console.log("⚠️ Tipo teléfono no existe:", datos.id_tipo_telefono);
-            return res.status(400).send("Error: el tipo de teléfono no existe.");
           }
 
           // Si todo es válido, hacemos el UPDATE
@@ -142,20 +179,25 @@ app.post("/actualizar/:id", (req, res) => {
   );
 });
 
-
-
 // Buscar contacto
 app.get("/buscar", (req, res) => {
   const busqueda = `%${req.query.q || ""}%`;
 
   const sqlBusqueda = `
-    SELECT * FROM contacto 
-    WHERE LOWER(primer_nombre) LIKE LOWER(?) 
-    OR LOWER(segundo_nombre) LIKE LOWER(?) 
-    OR LOWER(primer_apellido) LIKE LOWER(?) 
-    OR LOWER(segundo_apellido) LIKE LOWER(?) 
-    OR LOWER(email) LIKE LOWER(?) 
-    OR LOWER(telefono) LIKE LOWER(?)
+    SELECT c.*, 
+          g.detalle_genero, 
+          d.detalle_direccion, 
+          t.detalle_tipo_telefono
+    FROM contacto c
+    LEFT JOIN genero g ON c.id_genero = g.id_genero
+    LEFT JOIN direccion d ON c.id_direccion = d.id_direccion
+    LEFT JOIN tipo_telefono t ON c.id_tipo_telefono = t.id_tipo_telefono
+    WHERE LOWER(c.primer_nombre) LIKE LOWER(?) 
+    OR LOWER(c.segundo_nombre) LIKE LOWER(?) 
+    OR LOWER(c.primer_apellido) LIKE LOWER(?) 
+    OR LOWER(c.segundo_apellido) LIKE LOWER(?) 
+    OR LOWER(c.email) LIKE LOWER(?) 
+    OR LOWER(c.telefono) LIKE LOWER(?)
   `;
 
   conexion.query(
@@ -164,41 +206,64 @@ app.get("/buscar", (req, res) => {
     (err, contactos) => {
       if (err) throw err;
 
-      // 🔹 Si no hay contactos, renderizamos sin barras
-      if (contactos.length === 0) {
-        return res.render("index", { contactos, barrios: [] });
-      }
+      // Obtener catálogos para el formulario
+      conexion.query("SELECT * FROM genero", (err, generos) => {
+        if (err) throw err;
+        
+        conexion.query("SELECT * FROM direccion", (err, direcciones) => {
+          if (err) throw err;
+          
+          conexion.query("SELECT * FROM tipo_telefono", (err, tipos_telefono) => {
+            if (err) throw err;
 
-      // 🔹 Recalcular porcentajes según el total filtrado
-      const sqlBarrios = `
-        SELECT id_direccion, COUNT(*) as cantidad
-        FROM contacto
-        WHERE LOWER(primer_nombre) LIKE LOWER(?) 
-        OR LOWER(segundo_nombre) LIKE LOWER(?) 
-        OR LOWER(primer_apellido) LIKE LOWER(?) 
-        OR LOWER(segundo_apellido) LIKE LOWER(?) 
-        OR LOWER(email) LIKE LOWER(?) 
-        OR LOWER(telefono) LIKE LOWER(?)
-        GROUP BY id_direccion
-      `;
+            // 🔹 Si no hay contactos, renderizamos sin barras
+            if (contactos.length === 0) {
+              return res.render("index", { 
+                contactos, 
+                barrios: [],
+                generos,
+                direcciones,
+                tipos_telefono
+              });
+            }
 
-      conexion.query(
-        sqlBarrios,
-        [busqueda, busqueda, busqueda, busqueda, busqueda, busqueda],
-        (err2, barrios) => {
-          if (err2) throw err2;
+            // Recalcular porcentajes según el total filtrado
+            const sqlBarrios = `
+              SELECT d.id_direccion, d.detalle_direccion, COUNT(*) as cantidad
+              FROM contacto c
+              INNER JOIN direccion d ON c.id_direccion = d.id_direccion
+              WHERE LOWER(c.primer_nombre) LIKE LOWER(?) 
+              OR LOWER(c.segundo_nombre) LIKE LOWER(?) 
+              OR LOWER(c.primer_apellido) LIKE LOWER(?) 
+              OR LOWER(c.segundo_apellido) LIKE LOWER(?) 
+              OR LOWER(c.email) LIKE LOWER(?) 
+              OR LOWER(c.telefono) LIKE LOWER(?)
+              GROUP BY d.id_direccion, d.detalle_direccion
+            `;
 
-          const total = contactos.length;
-          barrios.forEach(b => (b.porcentaje = (b.cantidad * 100) / total));
-          res.render("index", { contactos, barrios });
-        }
-      );
+            conexion.query(
+              sqlBarrios,
+              [busqueda, busqueda, busqueda, busqueda, busqueda, busqueda],
+              (err2, barrios) => {
+                if (err2) throw err2;
+
+                const total = contactos.length;
+                barrios.forEach(b => (b.porcentaje = (b.cantidad * 100) / total));
+                
+                res.render("index", { 
+                  contactos, 
+                  barrios,
+                  generos,
+                  direcciones,
+                  tipos_telefono
+                });
+              }
+            );
+          });
+        });
+      });
     }
   );
 });
 
-
-
-
-
-app.listen(3000, () => console.log(" Servidor corriendo en http://localhost:3000"));
+app.listen(3000, () => console.log("✅ Servidor corriendo en http://localhost:3000"));

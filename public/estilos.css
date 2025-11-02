@@ -1,29 +1,131 @@
 body {
-  font-family: Arial;
+  font-family: Arial, sans-serif;
   background: #f6f8fc;
   text-align: center;
+  margin: 0;
+  padding: 20px;
 }
+
+h1 {
+  color: #0077cc;
+  margin-bottom: 20px;
+}
+
+h2 {
+  color: #333;
+  margin-top: 30px;
+}
+
 table {
   margin: 20px auto;
   border-collapse: collapse;
   width: 95%;
+  max-width: 1400px;
+  background: white;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
+
 th, td {
   border: 1px solid #ccc;
-  padding: 8px;
+  padding: 10px;
+  text-align: left;
 }
+
 th {
   background: #0077cc;
   color: white;
+  font-weight: bold;
 }
+
 tr:nth-child(even) {
-  background: #eef;
+  background: #f0f4ff;
 }
-form input {
-  margin: 4px;
-  padding: 6px;
+
+tr:hover {
+  background: #e8f0ff;
 }
+
+form {
+  margin: 20px auto;
+  max-width: 800px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+  align-items: center;
+}
+
+form input,
+form select,
+form button {
+  padding: 8px 12px;
+  font-size: 14px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  min-width: 180px;
+}
+
+form select {
+  background: white;
+  cursor: pointer;
+}
+
+form select:hover {
+  border-color: #0077cc;
+}
+
+form button {
+  background: #0077cc;
+  color: white;
+  border: none;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background 0.3s;
+}
+
+form button:hover {
+  background: #005599;
+}
+
 progress {
-  width: 60%;
-  height: 20px;
+  width: 70%;
+  height: 25px;
+  margin: 5px auto;
+  display: block;
+}
+
+progress::-webkit-progress-bar {
+  background-color: #eee;
+  border-radius: 5px;
+}
+
+progress::-webkit-progress-value {
+  background-color: #0077cc;
+  border-radius: 5px;
+}
+
+progress::-moz-progress-bar {
+  background-color: #0077cc;
+  border-radius: 5px;
+}
+
+a {
+  color: #0077cc;
+  text-decoration: none;
+  margin: 0 5px;
+  font-size: 18px;
+}
+
+a:hover {
+  opacity: 0.7;
+}
+
+td:last-child {
+  text-align: center;
+}
+
+p {
+  margin: 10px auto;
+  max-width: 600px;
+  font-size: 16px;
 }

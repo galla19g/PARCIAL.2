@@ -10,7 +10,7 @@ router.get("/", (req, res) => {
   });
 });
 
-// Agregar nuevo contacto
+
 router.post("/agregar", (req, res) => {
   const { primer_nombre, segundo_nombre, primer_apellido, segundo_apellido, id_genero, id_direccion, id_tipo_telefono, email, telefono } = req.body;
   const nuevo = { primer_nombre, segundo_nombre, primer_apellido, segundo_apellido, id_genero, id_direccion, id_tipo_telefono, email, telefono };
@@ -51,7 +51,6 @@ router.get("/eliminar/:id", (req, res) => {
   });
 });
 
-// Buscar contacto
 router.post("/buscar", (req, res) => {
   const buscar = `%${req.body.buscar}%`;
   conexion.query(
