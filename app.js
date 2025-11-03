@@ -11,7 +11,7 @@ app.set("view engine", "ejs");
 app.set("views", path.join(process.cwd(), "views"));
 app.use(express.static("public"));
 
-// Mostrar todos los contactos
+// 🔹 Mostrar todos los contactos
 app.get("/", (req, res) => {
   const sql = `
     SELECT c.*, 
@@ -65,7 +65,7 @@ app.get("/", (req, res) => {
   });
 });
 
-// Agregar contacto
+// 🔹 Agregar contacto
 app.post("/agregar", (req, res) => {
   const datos = req.body;
   const sql = `
@@ -88,7 +88,7 @@ app.post("/agregar", (req, res) => {
   );
 });
 
-// Eliminar contacto
+// 🔹 Eliminar contacto
 app.get("/eliminar/:id", (req, res) => {
   conexion.query("DELETE FROM contacto WHERE id_contacto=?", [req.params.id], err => {
     if (err) throw err;
@@ -96,7 +96,7 @@ app.get("/eliminar/:id", (req, res) => {
   });
 });
 
-// Cargar contacto a editar
+// 🔹 Cargar contacto a editar
 app.get("/editar/:id", (req, res) => {
   conexion.query("SELECT * FROM contacto WHERE id_contacto=?", [req.params.id], (err, filas) => {
     if (err) throw err;
@@ -127,6 +127,12 @@ app.get("/editar/:id", (req, res) => {
 app.post("/actualizar/:id", (req, res) => {
   const datos = req.body;
 
+  // Validación de género (solo 1 o 2)
+  if (![1, 2].includes(Number(datos.id_genero))) {
+    console.log("⚠️ Género inválido:", datos.id_genero);
+    return res.status(400).send("Error: el género solo puede ser 1 (Masculino) o 2 (Femenino).");
+  }
+
   // Validar dirección existente
   conexion.query(
     "SELECT id_direccion FROM direccion WHERE id_direccion = ?",
@@ -137,7 +143,10 @@ app.post("/actualizar/:id", (req, res) => {
         return res.status(500).send("Error en el servidor");
       }
 
-
+      if (resultadoDireccion.length === 0) {
+        console.log("⚠️ Dirección no existe:", datos.id_direccion);
+        return res.status(400).send("Error: la dirección seleccionada no existe.");
+      }
 
       // Validar tipo de teléfono existente
       conexion.query(
@@ -147,6 +156,11 @@ app.post("/actualizar/:id", (req, res) => {
           if (err2) {
             console.error("Error SQL:", err2);
             return res.status(500).send("Error en el servidor");
+          }
+
+          if (resultadoTelefono.length === 0) {
+            console.log("⚠️ Tipo teléfono no existe:", datos.id_tipo_telefono);
+            return res.status(400).send("Error: el tipo de teléfono no existe.");
           }
 
           // Si todo es válido, hacemos el UPDATE
@@ -227,7 +241,7 @@ app.get("/buscar", (req, res) => {
               });
             }
 
-            // Recalcular porcentajes según el total filtrado
+            // 🔹 Recalcular porcentajes según el total filtrado
             const sqlBarrios = `
               SELECT d.id_direccion, d.detalle_direccion, COUNT(*) as cantidad
               FROM contacto c
@@ -266,4 +280,5 @@ app.get("/buscar", (req, res) => {
   );
 });
 
-app.listen(3000, () => console.log("✅ Servidor corriendo en http://localhost:3000"));
+const PORT = process.env.PORT || 3001;
+app.listen(PORT, () => console.log(`✅ Servidor corriendo en http://localhost:${PORT}`));

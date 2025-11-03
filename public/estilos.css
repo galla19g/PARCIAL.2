@@ -29,6 +29,7 @@ th, td {
   border: 1px solid #ccc;
   padding: 10px;
   text-align: left;
+  vertical-align: middle;
 }
 
 th {
@@ -43,6 +44,19 @@ tr:nth-child(even) {
 
 tr:hover {
   background: #e8f0ff;
+}
+
+/* Estilos para la columna de imagen */
+td img {
+  display: block;
+  margin: 0 auto;
+  border: 2px solid #ddd;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+td:nth-child(2) {
+  text-align: center;
+  min-width: 80px;
 }
 
 form {

@@ -16,6 +16,7 @@
   <table>
     <tr>
       <th>ID</th>
+      <th>Imagen</th>
       <th>Primer Nombre</th>
       <th>Segundo Nombre</th>
       <th>Primer Apellido</th>
@@ -30,6 +31,13 @@
     <% contactos.forEach(c => { %>
     <tr>
       <td><%= c.id_contacto %></td>
+      <td>
+        <% if (c.imagen) { %>
+          <img src="/uploads/<%= c.imagen %>" alt="Foto de <%= c.primer_nombre %>" style="width: 50px; height: 50px; object-fit: cover; border-radius: 5px;">
+        <% } else { %>
+          <span style="color: #999; font-style: italic;">Sin imagen</span>
+        <% } %>
+      </td>
       <td><%= c.primer_nombre %></td>
       <td><%= c.segundo_nombre || '-' %></td>
       <td><%= c.primer_apellido %></td>
